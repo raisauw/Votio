@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Votio - Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="{{ url_for('static', filename='img/LogoVotio.png') }}" alt="Logo" height="40" class="me-2">
+      <strong>Votio</strong>
+    </a>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Service</a></li>
+        <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="container">
+    <h1>Secure Your Voice,<br>Shape The Choice.</h1>
+    <p class="lead text-muted">Voting online mudah, cepat, dan aman bersama Votio.</p>
+    <div class="mt-4">
+      <a href="{{ url_for('vote') }}" class="btn btn-outline-primary me-2">Masukkan Kode</a>
+      <a href="{{ url_for('create') }}" class="btn btn-primary">Buat Pemilihan</a>
+    </div>
+  </div>
+</header>
+
+<section class="container my-5">
+  <div class="row text-center">
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm p-4">
+        <h5 class="fw-bold text-primary">Keamanan Terjamin</h5>
+        <p>Setiap suara dienkripsi dan disimpan dengan aman.</p>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm p-4">
+        <h5 class="fw-bold text-primary">Waktu Fleksibel</h5>
+        <p>Pilih kapan dan di mana kamu ingin melakukan voting.</p>
+      </div>
+    </div>
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm p-4">
+        <h5 class="fw-bold text-primary">Hasil Instan</h5>
+        <p>Lihat hasil pemilihan secara langsung tanpa menunggu lama.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="container my-5">
+  <h2 class="text-center mb-4 fw-bold text-primary">FAQ</h2>
+  <div class="accordion" id="faqAccordion">
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">Apa itu Votio?</button>
+      </h2>
+      <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+        <div class="accordion-body">Votio adalah aplikasi voting online yang mudah dan aman digunakan untuk segala jenis pemilihan.</div>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">Apakah data saya aman?</button>
+      </h2>
+      <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+        <div class="accordion-body">Ya, semua data pemilih dan hasil disimpan dengan sistem terenkripsi.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container text-center">
+    <p class="mb-1">Trouble while voting? Hubungi kami!</p>
+    <div class="d-flex justify-content-center align-items-center gap-3">
+      <img src="{{ url_for('static', filename='img/whatsapp.png') }}" height="30">
+      <img src="{{ url_for('static', filename='img/instagram.png') }}" height="30">
+      <img src="{{ url_for('static', filename='img/facebook.png') }}" height="30">
+    </div>
+    <small class="d-block mt-2">© 2025 Votio</small>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

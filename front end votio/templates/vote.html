@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Votio - Vote</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="{{ url_for('static', filename='img/LogoVotio.png') }}" alt="Logo" height="40" class="me-2">
+      <strong>Votio</strong>
+    </a>
+  </div>
+</nav>
+
+<main class="vote-container container">
+  <h1>Pilih Kandidatmu</h1>
+  <p class="text-muted">Klik "Lihat CV" untuk membaca profil kandidat sebelum memilih.</p>
+
+  <div class="mt-4">
+    <div class="candidate-card mb-3">
+      <img src="{{ url_for('static', filename='img/candidate1.png') }}" alt="candidate">
+      <div style="flex:1">
+        <h5>Nama Kandidat 1</h5>
+        <p><strong>Visi:</strong> Meningkatkan kualitas lingkungan kampus</p>
+        <p><strong>Misi:</strong> Mengadakan program sosial setiap bulan</p>
+      </div>
+      <div>
+        <button class="btn btn-outline-primary mb-2" onclick="openModal('modalCV')">Lihat CV</button><br>
+        <button class="btn btn-primary" onclick="openModal('modalVoteConfirm')">Klik untuk Vote</button>
+      </div>
+    </div>
+
+    <div class="candidate-card mb-3">
+      <img src="{{ url_for('static', filename='img/candidate2.png') }}" alt="candidate">
+      <div style="flex:1">
+        <h5>Nama Kandidat 2</h5>
+        <p><strong>Visi:</strong> Membangun komunikasi mahasiswa yang solid</p>
+        <p><strong>Misi:</strong> Membuka forum diskusi setiap minggu</p>
+      </div>
+      <div>
+        <button class="btn btn-outline-primary mb-2" onclick="openModal('modalCV')">Lihat CV</button><br>
+        <button class="btn btn-primary" onclick="openModal('modalVoteConfirm')">Klik untuk Vote</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <button class="btn btn-success" onclick="openModal('modalVoteConfirm')">Konfirmasi Vote</button>
+  </div>
+</main>
+
+<!-- Modals -->
+<div id="modalCV" class="modal-backdrop" role="dialog">
+  <div class="modal-box">
+    <h5>CV Kandidat</h5>
+    <p>(Placeholder) Tidak ada CV terunggah.</p>
+    <div class="text-end mt-3">
+      <button class="btn btn-secondary" onclick="closeModal('modalCV')">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<div id="modalVoteConfirm" class="modal-backdrop" role="dialog">
+  <div class="modal-box">
+    <h5>Konfirmasi Vote</h5>
+    <p>Apakah Anda yakin ingin menyimpan vote ini?</p>
+    <div class="text-end mt-3">
+      <button class="btn btn-secondary" onclick="closeModal('modalVoteConfirm')">Batal</button>
+      <button class="btn btn-success" onclick="confirmVote()">Ya, Konfirmasi</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="container text-center">
+    <p class="mb-1">Trouble while voting? Hubungi kami!</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>

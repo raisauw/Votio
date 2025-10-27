@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Votio - Hasil</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center" href="/">
+      <img src="{{ url_for('static', filename='img/LogoVotio.png') }}" alt="Logo" height="40" class="me-2">
+      <strong>Votio</strong>
+    </a>
+  </div>
+</nav>
+
+<main class="result-container container">
+  <h1>Hasil Pemilihan</h1>
+  <p class="text-muted">Pemungutan suara telah berakhir pada <strong>13 Oktober 2025</strong>.</p>
+
+  <div class="mt-4">
+    <div class="result-card mb-3 d-flex align-items-center p-3">
+      <img src="{{ url_for('static', filename='img/candidate1.png') }}" width="90" height="90">
+      <div class="ms-3" style="flex:1">
+        <h5>Nama Kandidat 1</h5>
+        <p>Jumlah Vote: <strong>125</strong></p>
+        <div class="progress-bar"><div class="progress-fill" style="width:70%"></div></div>
+      </div>
+    </div>
+
+    <div class="result-card mb-3 d-flex align-items-center p-3">
+      <img src="{{ url_for('static', filename='img/candidate2.png') }}" width="90" height="90">
+      <div class="ms-3" style="flex:1">
+        <h5>Nama Kandidat 2</h5>
+        <p>Jumlah Vote: <strong>55</strong></p>
+        <div class="progress-bar"><div class="progress-fill" style="width:30%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="/" class="btn btn-outline-primary">Kembali ke Home</a>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container text-center">
+    <p class="mb-1">Terima kasih telah berpartisipasi di Votio 💙</p>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
