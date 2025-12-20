@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://kit.fontawesome.com/096f1f1e79.js" crossorigin="anonymous"></script>
+    <title>{% block title %}{% if title %}{{ title }}{% else %}Secure Your Voice{% endif %}{% endblock %} - Votio</title>
+    {% block style %}{% endblock %}
+</head>
+
+<body>
+
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center" href="/">
+                    <img src="{{ url_for('static', filename='img/LogoHitam.png') }}" alt="Votio Logo" height="36"
+                        class="me-2">
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link{{ ' active' if request.path == url_for('home') else '' }}" href="{{ '#home' if request.path == url_for('home') else url_for('home') }}">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#service">Service</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+
+    {% block content %}{% endblock %}
+
+    <footer class="contact-section">
+        <div class="container contact-content">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h3 class="contact-title">Trouble while voting?</h3>
+                    <h4 class="contact-subtitle">Let us know!</h4>
+                    <div class="d-flex flex-wrap">
+                        <a href="#" class="social-btn">
+                            <i class="fab fa-whatsapp"></i>
+                            WhatsApp
+                        </a>
+                        <a href="#" class="social-btn">
+                            <i class="fab fa-instagram"></i>
+                            Instagram
+                        </a>
+                        <a href="#" class="social-btn">
+                            <i class="fab fa-facebook"></i>
+                            Facebook
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+    {% block script %}{% endblock %}
+</body>
+</html>

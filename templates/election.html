@@ -1,0 +1,1190 @@
+{% extends 'base.html' %}
+
+{% block title %}Buat Pemilihan{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css') }}">
+<style>
+    .election-container {
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .photo-placeholder {
+        height: 50vh;
+        max-height: 400px;
+        border: 2px dashed var(--lightgrey-color);
+        background-color: var(--placeholder-color);
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .photo-placeholder:hover {
+        border-color: var(--secondary-color);
+        color: var(--secondary-color);
+    }
+
+    /* Photo placeholder & preview: make image cover the frame fully */
+    .photo-placeholder {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .photo-preview-img {
+        position: absolute;
+        inset: 8px;
+        /* keep a small inset so the border/frame remains visible */
+        width: calc(100% - 16px);
+        height: calc(100% - 16px);
+        object-fit: cover;
+        border-radius: calc(8px - 0px);
+        z-index: 0;
+        display: block;
+    }
+
+    .photo-placeholder-content {
+        z-index: 1;
+    }
+
+    /* Remove button: circular icon overlay */
+    .remove-photo-btn {
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        z-index: 2;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .remove-photo-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
+    /* Keep placeholder border/frame visible even when an image is present */
+    .photo-placeholder.has-photo {
+        /* keep existing border and background so image appears framed */
+        background-color: var(--placeholder-color) !important;
+    }
+
+    /* Validation styles */
+    .field-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 6px;
+        display: none;
+    }
+
+    .field-error.show {
+        display: block;
+    }
+
+    .input-error {
+        border-color: #dc3545 !important;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.1) !important;
+    }
+
+    .add-candidate-btn {
+        border: 2px dashed var(--primary-color) !important;
+        color: var(--primary-color) !important;
+        background: white !important;
+    }
+
+    .add-candidate-btn:hover {
+        background-color: var(--placeholder-color) !important;
+    }
+
+    .add-candidate-btn:disabled {
+        border-color: var(--lightgrey-color) !important;
+        color: var(--lightgrey-color) !important;
+        background-color: #f8f9fa !important;
+        cursor: not-allowed;
+    }
+
+    .deadline-note {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    .form-control::placeholder {
+        color: #a0a0a0;
+    }
+
+    #judul-pemilihan {
+        text-align: center;
+        font-size: 2em;
+        background-color: rgba(232, 232, 232, 0.25);
+    }
+
+    .btn-outline-custom {
+        color: var(--primary-color);
+        background: white;
+        transition: all 0.3s;
+        min-width: 220px;
+        padding: 10px 15px;
+    }
+
+    .btn-outline-custom:hover {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .datetime-selected {
+        background: var(--primary-color);
+        color: white !important;
+        font-weight: 600;
+    }
+
+    .time-display {
+        display: flex;
+        flex-direction: column;
+        align-items: start;
+        gap: 2px;
+    }
+
+    .date-text {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .time-text {
+        font-size: 12px;
+        opacity: 0.9;
+        font-weight: 500;
+    }
+
+    .original-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+    }
+
+    .flatpickr-calendar {
+        border-radius: 12px;
+        border: 1px solid #e0e0e0;
+        /* Use default placement. Avoid forcing left/transform which breaks default behavior. */
+    }
+
+    .flatpickr-day.selected {
+        background: var(--primary-color);
+    }
+
+    .flatpickr-time input:hover,
+    .flatpickr-time .flatpickr-am-pm:hover,
+    .flatpickr-time input:focus,
+    .flatpickr-time .flatpickr-am-pm:focus {
+        background: var(--highlight-color);
+    }
+
+    .upload-container {
+        width: 100%;
+    }
+
+    .upload-card {
+        background: white;
+        border: 1px solid var(--primary-color);
+        border-radius: 12px;
+        padding: 40px 30px;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .upload-card:hover {
+        border-color: var(--secondary-color);
+        background-color: #F8FBFF;
+    }
+
+    .upload-card.dragover {
+        border-color: var(--primary-color);
+        background-color: #E8F4FF;
+        transform: scale(1.02);
+    }
+
+    .upload-card.error {
+        border-color: #dc3545;
+        background-color: #f8d7da;
+    }
+
+    .upload-card.success {
+        border-color: #198754;
+        background-color: #d1e7dd;
+    }
+
+    .upload-icon {
+        font-size: 48px;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+    }
+
+    .upload-card.success .upload-icon {
+        color: #198754;
+    }
+
+    .upload-text {
+        color: var(--text-color);
+        font-size: 16px;
+        font-weight: 500;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+
+    .upload-card.success .upload-text {
+        color: #198754;
+    }
+
+    .browse-text {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: underline;
+        cursor: pointer;
+    }
+
+    .upload-card.success .browse-text {
+        color: #198754;
+    }
+
+    .file-input {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .file-info {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+
+    .upload-card.success .file-info {
+        color: #198754;
+    }
+
+    .supported-formats {
+        font-size: 12px;
+        color: #999;
+    }
+
+    .upload-card.success .supported-formats {
+        color: #198754;
+    }
+
+    /* Preview file PDF */
+    .file-preview {
+        margin-top: 20px;
+        background: var(--light-bg);
+        border-radius: 8px;
+        display: none;
+    }
+
+    .file-preview.show {
+        display: block;
+    }
+
+    .file-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #dc3545;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-icon {
+        font-size: 24px;
+        color: #dc3545;
+        margin-right: 12px;
+    }
+
+    .file-details {
+        flex: 1;
+    }
+
+    .file-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 4px;
+    }
+
+    .file-size {
+        font-size: 12px;
+        color: #666;
+    }
+
+    .file-remove {
+        color: #dc3545;
+        cursor: pointer;
+        padding: 8px 20px 8px 8px;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .file-remove:hover {
+        background-color: #f8d7da;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .error-message.show {
+        display: block;
+    }
+
+    .success-message {
+        color: #198754;
+        font-size: 14px;
+        margin-top: 10px;
+        display: none;
+    }
+
+    .success-message.show {
+        display: block;
+    }
+
+    .upload-status {
+        margin-top: 10px;
+        font-size: 14px;
+        display: none;
+    }
+
+    .upload-status.show {
+        display: block;
+    }
+
+    .candidate-count {
+        text-align: center;
+        color: var(--grey-color);
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .btn-danger:disabled {
+        background-color: var(--lightgrey-color) !important;
+        border-color: var(--lightgrey-color) !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    @media (max-width: 768px) {
+        .btn-outline-custom {
+            min-width: 200px;
+        }
+
+        .date-text {
+            font-size: 13px;
+        }
+
+        .time-text {
+            font-size: 11px;
+        }
+
+        /* Ensure selected date/time are visible on small screens */
+        .time-display {
+            display: flex !important;
+        }
+
+        .original-text {
+            display: block;
+        }
+
+        .btn-wrapper {
+            gap: 6px;
+            justify-content: center;
+            /* center on small screens */
+            position: relative;
+            /* allow flatpickr to position relative to this container */
+        }
+
+        .time-ended {
+            width: 100%;
+            /* make visible control full width on small screens */
+        }
+    }
+
+    /* Modal Konfirmasi Hapus */
+    .delete-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 1050;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-modal.show {
+        display: flex;
+    }
+
+    .delete-modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 0;
+        max-width: 560px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .delete-modal.show .delete-modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .delete-modal-header {
+        padding: 24px 24px 16px 24px;
+        border-bottom: 1px solid #e9ecef;
+        text-align: center;
+    }
+
+    .delete-modal-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #dc3545;
+        margin: 0;
+    }
+
+    .delete-modal-body {
+        padding: 20px 24px;
+        text-align: center;
+    }
+
+    .delete-modal-text {
+        color: #6c757d;
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 8px;
+    }
+
+    .delete-modal-warning {
+        color: #dc3545;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+
+    .delete-modal-footer {
+        padding: 16px 24px 24px 24px;
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .delete-confirm-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    .delete-cancel-btn:hover {
+        transform: translateY(-1px);
+    }
+
+    @media (max-width: 576px) {
+        .delete-modal-content {
+            width: 95%;
+            margin: 20px;
+        }
+
+        .delete-modal-footer {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<form id="electionForm" method="post" action="{{ url_for('election') }}" enctype="multipart/form-data">
+    <section class="election-section">
+        <div class="container my-5">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            <div class="mb-3">
+                {% for category, msg in messages %}
+                <div class="alert alert-danger" role="alert">{{ msg }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% endwith %}
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-end mb-4">
+                    <div class="col-lg-3">
+                        <label class="fw-semibold mb-2">Berakhir Pada</label>
+                        <div class="btn-wrapper">
+                            <button type="button" class="btn-custom btn-outline-custom btn-sm time-ended w-100"
+                                id="time-ended-btn">
+                                <div class="original-text" id="original-content">
+                                    <i class="fa-solid fa-calendar"></i>
+                                    <span>Atur Waktu Selesai</span>
+                                </div>
+                                <div class="time-display d-none" id="time-display">
+                                    <span class="date-text" id="display-date"></span>
+                                    <span class="time-text" id="display-time"></span>
+                                </div>
+                            </button>
+                            <input type="text" id="selected-datetime-picker" class="d-none" aria-hidden="true">
+                        </div>
+                        <!-- Hidden input to store the selected datetime (submitted) -->
+                        <input type="hidden" id="selected-datetime" name="end_datetime">
+                    </div>
+                </div>
+
+
+                <div class="card mb-3 border-0 shadow-sm">
+                    <div class="card-body">
+                        <input class="fw-bold form-control" id="judul-pemilihan" name="title"
+                            placeholder="Judul Pemilihan">
+                        <div id="judul-error" class="field-error">Judul pemilihan wajib diisi</div>
+                    </div>
+                </div>
+
+                <!-- Container untuk kandidat -->
+                <div class="candidate-wrapper d-flex flex-column" id="candidateContainer">
+                    <!-- Kandidat akan ditambahkan di sini secara dinamis -->
+                </div>
+
+                <!-- Info jumlah kandidat -->
+                <div class="candidate-count" id="candidateCount">
+                    Kandidat: <span id="currentCount">0</span>/4
+                </div>
+
+                <!-- Tombol Tambah Kandidat -->
+                <button class="btn add-candidate-btn w-100 mb-4 py-2" id="addCandidateBtn">
+                    <i class="fas fa-plus me-2"></i>
+                    Kandidat Baru
+                </button>
+                <div class="text-center">
+                    <button type="button" class="btn-custom btn-primary-custom px-5 py-2">Konfirmasi</button>
+                </div>
+
+            </div>
+        </div>
+    </section>
+</form>
+
+<!-- Modal Konfirmasi Hapus -->
+<div class="delete-modal" id="deleteModal">
+    <div class="delete-modal-content px-5">
+        <div class="delete-modal-header border-0">
+            <i class="fa-solid fa-triangle-exclamation text-danger display-2 mb-4"></i>
+            <h3 class="delete-modal-title">Hapus Kandidat Ini?</h3>
+        </div>
+        <div class="delete-modal-body py-0">
+            <p class="delete-modal-text">
+                Anda akan menghapus kandidat secara permanent. Tindakan ini tidak dapat dibatalkan dan semua data terkait akan hilang.
+            </p>
+        </div>
+        <div class="delete-modal-footer">
+            <button class="delete-cancel-btn btn-sm btn-custom btn-danger_outline-custom"
+                id="cancelDeleteBtn">Batalkan</button>
+            <button class="delete-confirm-btn btn-sm btn-custom btn-danger-custom"
+                id="confirmDeleteBtn">Konfirmasi</button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='js/flatpickr.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let candidateCount = 0;
+        const maxCandidates = 4;
+        const candidateContainer = document.getElementById('candidateContainer');
+        const addCandidateBtn = document.getElementById('addCandidateBtn');
+        const currentCountElement = document.getElementById('currentCount');
+
+        // Variabel untuk modal hapus
+        const deleteModal = document.getElementById('deleteModal');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+        let currentCandidateToDelete = null;
+
+        // Fungsi untuk membuat template kandidat
+        function createCandidateTemplate(candidateNumber) {
+            return `
+                <div class="candidate-wrapper_item card border-0 shadow-sm mb-4" data-candidate-id="${candidateNumber}">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="card-title mb-0 fw-bold">KANDIDAT ${candidateNumber}</h5>
+                            <button class="btn btn-danger delete-candidate-btn" data-candidate-id="${candidateNumber}">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12 col-lg-3">
+                                <div class="text-center mb-4">
+                                    <div class="photo-placeholder rounded d-flex flex-column align-items-center justify-content-center mx-auto position-relative">
+                                        <!-- Preview image (hidden until a photo is selected) -->
+                                        <img src="" alt="Preview" class="photo-preview-img d-none">
+
+                                        <!-- Placeholder content shown when no photo is present -->
+                                        <div class="photo-placeholder-content d-flex flex-column align-items-center">
+                                            <i class="fas fa-camera mb-2 fs-2"></i>
+                                            <span>Tambahkan Foto</span>
+                                        </div>
+
+                                        <!-- Hidden file input for photo upload (triggered via JS) -->
+                                        <input type="file" accept="image/*" class="candidate-photo-input d-none">
+
+                                        <!-- Remove button shown when photo present (icon-only, accessible) -->
+                                        <button type="button" class="remove-photo-btn d-none" style="position:absolute; top:8px; right:8px;" aria-label="Hapus foto" title="Hapus foto">
+                                            <i class="fas fa-times" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 col-lg-9">
+                                <!-- Form Input -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Nama<span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control candidate-name" placeholder="Ketik Disini" required>
+                                    <div class="field-error name-error">Nama kandidat wajib diisi</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Visi</label>
+                                    <textarea class="form-control candidate-vision" rows="3" placeholder="Ketik Disini"></textarea>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Misi</label>
+                                    <textarea class="form-control candidate-mission" rows="3" placeholder="Ketik Disini"></textarea>
+                                </div>
+
+                                <!-- Upload CV -->
+                                <div class="mt-3">
+                                    <div class="upload-container">
+                                        <div class="upload-card upload-area">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <div class="upload-text">
+                                                <span class="browse-text">Cari</span>
+                                                atau tarik file ke sini
+                                            </div>
+                                            <input type="file" class="file-input candidate-cv" accept=".pdf">
+                                            <div class="file-info">
+                                                Hanya file PDF (maks. 10MB)
+                                            </div>
+                                            <div class="supported-formats">
+                                                Format: .pdf
+                                            </div>
+                                        </div>
+
+                                        <!-- Status upload -->
+                                        <div class="upload-status">
+                                            <i class="fas fa-check-circle me-2 text-success"></i>
+                                            <span>1 file PDF terpilih</span>
+                                        </div>
+
+                                        <!-- Pesan error -->
+                                        <div class="error-message">
+                                            <i class="fas fa-exclamation-circle me-2"></i>
+                                            <span>File harus berformat PDF</span>
+                                        </div>
+
+                                        <!-- Area preview file -->
+                                        <div class="file-preview"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Fungsi untuk menambah kandidat
+        function addCandidate() {
+            if (candidateCount < maxCandidates) {
+                candidateCount++;
+                const candidateHtml = createCandidateTemplate(candidateCount);
+                candidateContainer.insertAdjacentHTML('beforeend', candidateHtml);
+                updateCandidateCount();
+                initializeNewCandidate(candidateCount);
+                updateDeleteButtons();
+
+                if (candidateCount === maxCandidates) {
+                    addCandidateBtn.disabled = true;
+                    addCandidateBtn.innerHTML = '<i class="fas fa-ban me-2"></i>Maksimal 4 Kandidat';
+                }
+            }
+        }
+
+        // Fungsi untuk menampilkan modal konfirmasi hapus
+        function showDeleteModal(candidateId) {
+            currentCandidateToDelete = candidateId;
+            deleteModal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // Prevent background scroll
+        }
+
+        // Fungsi untuk menyembunyikan modal konfirmasi hapus
+        function hideDeleteModal() {
+            deleteModal.classList.remove('show');
+            currentCandidateToDelete = null;
+            document.body.style.overflow = ''; // Restore background scroll
+        }
+
+        // Event listener untuk tombol konfirmasi hapus
+        confirmDeleteBtn.addEventListener('click', function () {
+            if (currentCandidateToDelete !== null) {
+                removeCandidate(currentCandidateToDelete);
+                hideDeleteModal();
+            }
+        });
+
+        // Event listener untuk tombol batal hapus
+        cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+
+        // Event listener untuk menutup modal ketika klik di luar
+        deleteModal.addEventListener('click', function (e) {
+            if (e.target === deleteModal) {
+                hideDeleteModal();
+            }
+        });
+
+        // Event listener untuk tombol hapus - PERBAIKAN: Gunakan event delegation
+        function setupDeleteButtonHandler() {
+            candidateContainer.removeEventListener('click', handleDeleteClick);
+            candidateContainer.addEventListener('click', handleDeleteClick);
+        }
+
+        function handleDeleteClick(event) {
+            if (event.target.closest('.delete-candidate-btn')) {
+                const deleteBtn = event.target.closest('.delete-candidate-btn');
+
+                if (!deleteBtn.disabled) {
+                    const candidateId = parseInt(deleteBtn.getAttribute('data-candidate-id'));
+                    showDeleteModal(candidateId);
+                }
+            }
+        }
+
+        // Fungsi untuk menghapus kandidat
+        function removeCandidate(candidateId) {
+            if (candidateCount > 1) {
+                const candidateElement = document.querySelector(`[data-candidate-id="${candidateId}"]`);
+                if (candidateElement) {
+                    candidateElement.remove();
+                    candidateCount--;
+                    updateCandidateCount();
+                    renumberCandidates();
+                    updateDeleteButtons();
+
+                    if (candidateCount < maxCandidates) {
+                        addCandidateBtn.disabled = false;
+                        addCandidateBtn.innerHTML = '<i class="fas fa-plus me-2"></i>Kandidat Baru';
+                    }
+                }
+            }
+        }
+
+        // Fungsi untuk update status tombol hapus
+        function updateDeleteButtons() {
+            const deleteButtons = document.querySelectorAll('.delete-candidate-btn');
+
+            if (candidateCount === 1) {
+                deleteButtons.forEach(btn => {
+                    btn.disabled = true;
+                });
+            } else {
+                deleteButtons.forEach(btn => {
+                    btn.disabled = false;
+                });
+            }
+        }
+
+        // Fungsi untuk update nomor kandidat setelah penghapusan
+        function renumberCandidates() {
+            const candidateElements = candidateContainer.querySelectorAll('.candidate-wrapper_item');
+            candidateElements.forEach((element, index) => {
+                const newNumber = index + 1;
+
+                element.setAttribute('data-candidate-id', newNumber);
+                element.querySelector('.card-title').textContent = `KANDIDAT ${newNumber}`;
+
+                const deleteBtn = element.querySelector('.delete-candidate-btn');
+                deleteBtn.setAttribute('data-candidate-id', newNumber);
+            });
+        }
+
+        // Fungsi untuk update counter
+        function updateCandidateCount() {
+            currentCountElement.textContent = candidateCount;
+        }
+
+        // Fungsi untuk inisialisasi kandidat baru
+        function initializeNewCandidate(candidateNumber) {
+            const candidateElement = document.querySelector(`[data-candidate-id="${candidateNumber}"]`);
+            if (candidateElement) {
+                const uploadArea = candidateElement.querySelector('.upload-area');
+                const fileInput = candidateElement.querySelector('.candidate-cv');
+                const filePreview = candidateElement.querySelector('.file-preview');
+                const errorMessage = candidateElement.querySelector('.error-message');
+                const uploadStatus = candidateElement.querySelector('.upload-status');
+
+                uploadArea.addEventListener('click', function (e) {
+                    if (e.target !== fileInput) {
+                        fileInput.click();
+                    }
+                });
+
+                fileInput.addEventListener('change', function (e) {
+                    handleFileUpload(e.target.files, uploadArea, filePreview, errorMessage, uploadStatus);
+                });
+
+                // Photo upload / preview / remove handlers
+                const photoPlaceholder = candidateElement.querySelector('.photo-placeholder');
+                const photoInput = candidateElement.querySelector('.candidate-photo-input');
+                const photoPreviewImg = candidateElement.querySelector('.photo-preview-img');
+                const removePhotoBtn = candidateElement.querySelector('.remove-photo-btn');
+                const placeholderContent = candidateElement.querySelector('.photo-placeholder-content');
+
+                // Click on placeholder opens file dialog (unless clicking remove button)
+                photoPlaceholder.addEventListener('click', function (e) {
+                    // If clicked the remove button, ignore here (remove handler below handles it)
+                    if (e.target === removePhotoBtn || e.target.closest('.remove-photo-btn')) return;
+                    photoInput.click();
+                });
+
+                // When a file is selected
+                photoInput.addEventListener('change', function (e) {
+                    const file = e.target.files && e.target.files[0];
+                    if (!file) return;
+
+                    // Basic validation: image type and size (max 5MB)
+                    if (!file.type.startsWith('image/')) {
+                        alert('Hanya file gambar yang diperbolehkan');
+                        photoInput.value = '';
+                        return;
+                    }
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('Ukuran file terlalu besar. Maksimal 5MB.');
+                        photoInput.value = '';
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (ev) {
+                        photoPreviewImg.src = ev.target.result;
+                        photoPreviewImg.classList.remove('d-none');
+                        placeholderContent.classList.add('d-none');
+                        removePhotoBtn.classList.remove('d-none');
+                        // Add class so CSS removes placeholder border/background
+                        photoPlaceholder.classList.add('has-photo');
+                    };
+                    reader.readAsDataURL(file);
+                });
+
+                // Remove photo and reset state
+                removePhotoBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    photoInput.value = '';
+                    photoPreviewImg.src = '';
+                    photoPreviewImg.classList.add('d-none');
+                    placeholderContent.classList.remove('d-none');
+                    removePhotoBtn.classList.add('d-none');
+                    // Remove the has-photo modifier so placeholder returns to original style
+                    photoPlaceholder.classList.remove('has-photo');
+                });
+            }
+        }
+
+        // Fungsi untuk handle upload file
+        function handleFileUpload(files, uploadArea, filePreview, errorMessage, uploadStatus) {
+            errorMessage.classList.remove('show');
+            uploadStatus.classList.remove('show');
+            uploadArea.classList.remove('error');
+            uploadArea.classList.remove('success');
+
+            if (files.length > 1) {
+                showUploadError('Hanya dapat mengupload 1 file PDF', uploadArea, errorMessage);
+                return;
+            }
+
+            const file = files[0];
+
+            if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+                showUploadError('Hanya file PDF yang diperbolehkan', uploadArea, errorMessage);
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showUploadError(`File ${file.name} terlalu besar. Maksimal 10MB.`, uploadArea, errorMessage);
+                return;
+            }
+
+            handleSuccessfulFileUpload(file, uploadArea, filePreview, uploadStatus);
+        }
+
+        function showUploadError(message, uploadArea, errorMessage) {
+            errorMessage.querySelector('span').textContent = message;
+            errorMessage.classList.add('show');
+            uploadArea.classList.add('error');
+        }
+
+        function handleSuccessfulFileUpload(file, uploadArea, filePreview, uploadStatus) {
+            uploadArea.classList.add('success');
+            uploadStatus.classList.add('show');
+            filePreview.innerHTML = '';
+            addFileToPreview(file, filePreview, uploadArea, uploadStatus);
+        }
+
+        function addFileToPreview(file, filePreview, uploadArea, uploadStatus) {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+
+            fileItem.innerHTML = `
+                <i class="fas fa-file-pdf file-icon"></i>
+                <div class="file-details">
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-size">${formatFileSize(file.size)}</div>
+                </div>
+                <i class="fas fa-times file-remove" title="Hapus file"></i>
+            `;
+
+            const removeBtn = fileItem.querySelector('.file-remove');
+            removeBtn.addEventListener('click', function () {
+                fileItem.remove();
+                filePreview.classList.remove('show');
+                uploadStatus.classList.remove('show');
+                uploadArea.classList.remove('success');
+                // Also clear the associated file input so validation will reflect removal
+                try {
+                    const input = uploadArea.parentElement.querySelector('.candidate-cv');
+                    if (input) input.value = '';
+                } catch (err) {
+                    // ignore
+                }
+            });
+
+            filePreview.appendChild(fileItem);
+            filePreview.classList.add('show');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Event listener untuk tombol tambah kandidat
+        addCandidateBtn.addEventListener('click', addCandidate);
+
+        // Setup event delegation untuk tombol hapus
+        setupDeleteButtonHandler();
+
+        // Inisialisasi kandidat pertama
+        addCandidate();
+
+        const flatpickrInstance = flatpickr("#selected-datetime-picker", {
+            enableTime: true,
+            dateFormat: "Y-m-d H:i",
+            time_24hr: true,
+            minuteIncrement: 1,
+            locale: "id",
+            onOpen: function (selectedDates, dateStr, instance) {
+                document.getElementById('time-ended-btn').classList.add('active');
+            },
+            onClose: function (selectedDates, dateStr, instance) {
+                document.getElementById('time-ended-btn').classList.remove('active');
+
+                if (selectedDates.length > 0) {
+                    updateDateTimeDisplay(selectedDates[0]);
+                    // write into the real hidden input that will be submitted
+                    document.getElementById('selected-datetime').value = dateStr;
+
+                    const btn = document.getElementById('time-ended-btn');
+                    btn.classList.add('datetime-selected');
+
+                    setTimeout(() => {
+                        btn.style.transform = 'scale(1.02)';
+                        setTimeout(() => {
+                            btn.style.transform = 'scale(1)';
+                        }, 150);
+                    }, 100);
+                }
+            },
+            onChange: function (selectedDates, dateStr, instance) {
+                // Update display ketika tanggal berubah (termasuk saat masih terbuka)
+                if (selectedDates.length > 0) {
+                    updateDateTimeDisplay(selectedDates[0]);
+                }
+            }
+        });
+
+        // Saat button diklik, buka flatpickr dan atur posisi
+        document.getElementById('time-ended-btn').addEventListener('click', function (e) {
+            e.preventDefault();
+            flatpickrInstance.open();
+
+            // Setelah calendar terbuka, atur posisinya
+            setTimeout(() => {
+                const calendar = document.querySelector('.flatpickr-calendar.open');
+                const button = document.getElementById('time-ended-btn');
+                if (calendar && button) {
+                    const rect = button.getBoundingClientRect();
+                    calendar.style.position = 'fixed';
+                    calendar.style.top = (rect.bottom + window.scrollY + 8) + 'px';
+                    calendar.style.left = (rect.left + window.scrollX) + 'px';
+                }
+            }, 10);
+        });
+
+        function updateDateTimeDisplay(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+
+            const monthNames = [
+                'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+                'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+            ];
+
+            const dayNames = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+
+            const dayName = dayNames[date.getDay()];
+            const monthName = monthNames[date.getMonth()];
+
+            const displayDate = `${dayName}, ${day} ${monthName} ${year}`;
+            const displayTime = `${hours}:${minutes} WIB`;
+
+            // Update teks pada button
+            document.getElementById('display-date').textContent = displayDate;
+            document.getElementById('display-time').textContent = displayTime;
+
+            // Sembunyikan teks default dan tampilkan display tanggal
+            document.getElementById('original-content').classList.add('d-none');
+            document.getElementById('time-display').classList.remove('d-none');
+
+            // Juga update teks pada input flatpickr (optional, untuk konsistensi)
+            document.getElementById('selected-datetime-picker').value = `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        // Fungsi reset untuk double click (jika perlu)
+        document.getElementById('time-ended-btn').addEventListener('dblclick', function (e) {
+            if (this.classList.contains('datetime-selected')) {
+                if (confirm('Reset waktu pemilihan?')) {
+                    this.classList.remove('datetime-selected');
+                    document.getElementById('original-content').classList.remove('d-none');
+                    document.getElementById('time-display').classList.add('d-none');
+                    document.getElementById('selected-datetime').value = '';
+                    document.getElementById('selected-datetime-picker').value = '';
+                    flatpickrInstance.clear();
+                }
+            }
+        });
+
+        const confirmBtn = document.querySelector('.btn-primary-custom');
+        confirmBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            // Clear previous validation states
+            document.getElementById('judul-error').classList.remove('show');
+            document.getElementById('judul-pemilihan').classList.remove('input-error');
+
+            const candidateElements = document.querySelectorAll('.candidate-wrapper_item');
+            candidateElements.forEach(el => {
+                const nameInput = el.querySelector('.candidate-name');
+                const nameError = el.querySelector('.name-error'); //dibawah kotak
+                if (nameError) nameError.classList.remove('show');
+                if (nameInput) nameInput.classList.remove('input-error');
+            });
+
+            let hasError = false;
+
+            // Validate title
+            const titleEl = document.getElementById('judul-pemilihan');
+            if (!titleEl.value || !titleEl.value.trim()) {
+                document.getElementById('judul-error').classList.add('show');
+                titleEl.classList.add('input-error');
+                if (!hasError) titleEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                hasError = true;
+            }
+
+            // Validate each candidate
+            candidateElements.forEach(el => {
+                if (hasError && el.querySelector('.name-error') && el.querySelector('.name-error').classList.contains('show')) return;
+
+                const nameInput = el.querySelector('.candidate-name');
+                const nameErr = el.querySelector('.name-error');
+
+                if (nameInput && (!nameInput.value || !nameInput.value.trim())) {
+                    if (nameErr) nameErr.classList.add('show');
+                    nameInput.classList.add('input-error');
+                    if (!hasError) nameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    hasError = true;
+                }
+
+            });
+
+            // If there are errors, stop and show; otherwise proceed
+            if (hasError) {
+                return;
+            }
+
+            // Assign names to candidate inputs so they are submitted as arrays
+            const form = document.getElementById('electionForm');
+            const candidateEls = document.querySelectorAll('.candidate-wrapper_item');
+            candidateEls.forEach((el, idx) => {
+                const nameInput = el.querySelector('.candidate-name');
+                const vision = el.querySelector('.candidate-vision');
+                const mission = el.querySelector('.candidate-mission');
+                const photo = el.querySelector('.candidate-photo-input');
+                const cv = el.querySelector('.candidate-cv');
+
+                if (nameInput) nameInput.setAttribute('name', `candidates[${idx}][name]`);
+                if (vision) vision.setAttribute('name', `candidates[${idx}][vision]`);
+                if (mission) mission.setAttribute('name', `candidates[${idx}][mission]`);
+                if (photo) photo.setAttribute('name', `candidates[${idx}][photo]`);
+                if (cv) cv.setAttribute('name', `candidates[${idx}][cv]`);
+            });
+
+            // Submit the form to the server
+            form.submit();
+        });
+
+        document.getElementById('time-ended-btn').addEventListener('dblclick', function (e) {
+            if (this.classList.contains('datetime-selected')) {
+                if (confirm('Reset waktu pemilihan?')) {
+                    this.classList.remove('datetime-selected');
+                    document.getElementById('original-content').classList.remove('d-none');
+                    document.getElementById('time-display').classList.add('d-none');
+                    document.getElementById('selected-datetime').value = '';
+                    flatpickrInstance.clear();
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

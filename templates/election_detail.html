@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+
+{% block title %}Rincian Pemilihan{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/flatpickr.min.css') }}">
+<style>
+    /* Visuals inspired by election.html */
+    .detail-hero {
+        display: flex;
+        gap: 24px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .detail-title {
+        font-size: 28px;
+        font-weight: 800;
+        text-align: center;
+        padding: 18px;
+    }
+
+    .meta-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .meta-box {
+        background: #fff;
+        border: 1px solid #eef2f7;
+        padding: 10px 12px;
+        border-radius: 8px;
+        min-width: 160px;
+    }
+
+    .photo-placeholder {
+        height: 38vh;
+        max-width: 25vh;
+        max-height: 300px;
+        background-color: var(--placeholder-color);
+        position: relative;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+
+    .photo-preview-img {
+        position: absolute;
+        inset: 8px;
+        width: calc(100% - 16px);
+        height: calc(100% - 16px);
+        object-fit: cover;
+        border-radius: 8px;
+        z-index: 0;
+        display: block;
+    }
+
+    .photo-placeholder-content {
+        z-index: 1;
+        color: #6c757d;
+    }
+
+    .upload-card {
+        border-radius: 8px;
+        padding: 12px;
+        border: 1px solid #e9eef6;
+        background: white;
+    }
+
+    .readonly-badge {
+        background: #f1f5f9;
+        color: #52606d;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+
+    .back-btn {
+        margin-bottom: 18px;
+    }
+
+    /* Modern visual improvements */
+    .detail-hero {
+        background: linear-gradient(90deg, rgba(244, 246, 255, 1) 0%, rgba(255, 255, 255, 1) 100%);
+        padding: 18px;
+        border-radius: 14px;
+    }
+
+    .meta-box strong {
+        display: block;
+        font-size: 14px;
+    }
+
+    .candidate-card {
+        transition: transform .18s ease, box-shadow .18s ease;
+        overflow: hidden;
+    }
+
+    .candidate-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 18px 40px rgba(12, 38, 63, 0.12);
+    }
+
+    .vote-count {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    /* Candidate card typography & spacing improvements */
+    .candidate-card {
+        padding: 16px;
+    }
+
+    .candidate-card h5 {
+        font-size: 18px;
+        margin-bottom: 8px;
+        color: #0b1220;
+    }
+
+    .candidate-card .col-8 {
+        padding-left: 18px;
+    }
+
+    .candidate-card .section-title {
+        font-size: 13px;
+        font-weight: 700;
+        color: #111827;
+        margin-bottom: 6px;
+    }
+
+    .candidate-visi,
+    .candidate-misi {
+        line-height: 1.8;
+        color: #334155;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border-radius: 5px;
+        padding: 12px;
+        background-color: #f7f7f7;
+    }
+
+    .candidate-visi+.candidate-misi {
+        margin-top: 6px;
+    }
+
+    .photo-placeholder {
+        border-radius: 10px;
+        overflow: hidden;
+        background: linear-gradient(180deg, #f8fafc, #ffffff);
+    }
+
+    .photo-placeholder .photo-preview-img {
+        transition: transform .3s ease;
+    }
+
+    .candidate-card:hover .photo-preview-img {
+        transform: scale(1.02);
+    }
+
+    .candidate-card .meta-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .vote-bar {
+        height: 10px;
+        background: #eef2ff;
+        border-radius: 999px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .vote-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #7c3aed, #06b6d4);
+        width: 0%;
+        transition: width .6s cubic-bezier(.2, .8, .2, 1);
+    }
+
+    /* CV modal styles for dynamic modal */
+    #cvModalOverlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(6, 8, 25, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 2200;
+    }
+
+    #cvModalBox {
+        width: 90%;
+        max-width: 1000px;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(2, 6, 23, 0.4);
+    }
+
+    #cvModalHeader {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid #eef2f6;
+    }
+
+    #cvModalContent {
+        height: 78vh;
+    }
+
+    /* Generic confirmation modal (used for vote confirm) */
+    .delete-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2300;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-modal.show {
+        display: flex;
+    }
+
+    .delete-modal-content {
+        background: white;
+        border-radius: 16px;
+        padding: 0;
+        max-width: 560px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        transform: scale(0.9);
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .delete-modal.show .delete-modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 991.98px) {
+        .detail-title {
+            font-size: 22px;
+        }
+
+        .detail-hero {
+            padding: 14px;
+        }
+
+        .photo-placeholder {
+            height: 30vh;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+
+        /* Stack hero info */
+        .detail-hero {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .detail-hero>div[style] {
+            width: 100%;
+        }
+
+        .meta-row {
+            gap: 8px;
+        }
+
+        .meta-box {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        /* Ensure the image scales naturally and sits above the text */
+        .candidate-card .row {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .candidate-card .col-4,
+        .candidate-card .col-8 {
+            max-width: 100%;
+            flex: 0 0 100%;
+        }
+
+        .photo-placeholder {
+            height: 200px;
+        }
+
+        .photo-preview-img {
+            position: static;
+            inset: auto;
+            width: 100%;
+            height: 100%;
+            border-radius: 8px;
+        }
+
+        /* Make action buttons stack and expand */
+        .mt-2.d-flex.align-items-center.gap-2 {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .mt-2.d-flex.align-items-center.gap-2 .cv-btn,
+        .mt-2.d-flex.align-items-center.gap-2 .vote-btn {
+            width: 100%;
+            display: block;
+        }
+
+        /* Give vote bar breathing room */
+        .vote-bar {
+            margin-left: 0;
+            margin-top: 10px;
+        }
+
+        /* Modal: full height on small screens */
+        #cvModalBox {
+            width: 95%;
+            max-width: 680px;
+        }
+
+        #cvModalContent {
+            height: 70vh;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container my-5">
+
+    <h1 class="detail-title">{{ election['title'] }}</h1>
+
+    <div class="card shadow-sm border-0 p-4 mb-4">
+        <div class="detail-hero">
+            <div style="flex:1">
+                <div class="meta-row mt-2">
+                    <div class="meta-box">Kode: <strong id="electionCode">{{ election['code'] }}</strong></div>
+                    <div class="meta-box">Mulai: <strong>{{ election['start_date'] }}</strong></div>
+                    <div class="meta-box">Selesai: <strong>{{ election['end_date'] }}</strong></div>
+                </div>
+            </div>
+            <div style="width:280px">
+                <div class="d-flex flex-column align-items-end gap-2">
+                    <div class="d-flex gap-2 mt-2">
+                        <button id="copyCodeBtn" class="btn btn-sm btn-outline-secondary" title="Salin kode ke clipboard">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>Salin Kode</span>
+                        </button>
+                        <button id="shareBtn" class="btn btn-sm btn-outline-primary" title="Bagikan">
+                            <i class="fa-solid fa-share"></i>
+                            <span>Bagikan</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        {% for c in candidates %}
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-3 candidate-card py-5">
+                <div class="row align-items-center gap-4">
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm mb-5">
+                            <div class="card-body d-flex gap-2">
+                                <div class="">
+                                    <div class="bg-secondary text-white px-4 py-3 rounded">{{ loop.index }}</div>
+                                </div>
+                                <div class="col text-center">
+                                    <h5 class="mb-1 fw-bold candidate-name bg-dark text-white px-4 py-3 rounded">{{ c['nama'] }}</h5>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="photo-placeholder shadow-sm mx-auto">
+                            {% if c['foto_path'] %}
+                            <img src="{{ url_for('uploaded_file', filename=c['foto_path']) }}" class="photo-preview-img"
+                                alt="{{ c['nama'] }}" loading="lazy">
+                            {% else %}
+                            <div
+                                class="photo-placeholder-content d-flex align-items-center justify-content-center h-100">
+                                Tidak ada foto</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-body">
+                                <p class="mb-1"><strong>Visi</strong></p>
+                                <p class="text-muted small candidate-visi mb-0" data-full="{{ (c['visi'] or '')|e }}">{{
+                                    c['visi'] or '-' }}</p>
+                                <p class="mb-1"><strong>Misi</strong></p>
+                                <p class="text-muted small candidate-misi mb-0" data-full="{{ (c['misi'] or '')|e }}">{{
+                                    c['misi'] or '-' }}</p>
+                                {% if c['cv_path'] %}
+                                <div class="mt-2 gap-2">
+                                    <button type="button" class="btn btn-outline-custom cv-btn"
+                                        data-file="{{ url_for('uploaded_file', filename=c['cv_path']) }}">Lihat
+                                        CV</button>
+                                </div>
+                                {% else %}
+                                <div class="text-muted small">Tidak ada CV</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <button type="button" class="vote-btn shadow-sm mt-3 btn-custom w-100 btn-primary-custom" data-candidate-id="{{ c['id'] }}">Click To Vote</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="mt-4 text-center">
+        <span class="text-muted">Jumlah kandidat: <strong>{{ candidates|length }}</strong></span>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script>
+    // Copy election code to clipboard
+    document.addEventListener('DOMContentLoaded', function () {
+        const copyBtn = document.getElementById('copyCodeBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const codeEl = document.getElementById('electionCode');
+
+        if (copyBtn && codeEl) {
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(codeEl.textContent.trim());
+                    copyBtn.textContent = 'Tersalin';
+                    setTimeout(() => copyBtn.innerHTML = '<i class="fa-solid fa-copy"></i> <span>Salin Kode</span>', 1500);
+                } catch (err) {
+                    alert('Gagal menyalin kode');
+                }
+            });
+        }
+
+        if (shareBtn) {
+            shareBtn.addEventListener('click', async () => {
+                const url = window.location.href;
+                const title = document.title || 'Rincian Pemilihan';
+                if (navigator.share) {
+                    try { await navigator.share({ title, url }); } catch (e) { /* ignore */ }
+                } else {
+                    try {
+                        await navigator.clipboard.writeText(url);
+                        shareBtn.textContent = 'Link tersalin';
+                        setTimeout(() => shareBtn.innerHTML = '<i class="fa-solid fa-share"></i> <span>Bagikan</span>', 1500);
+                    } catch (e) {
+                        alert('Gagal menyalin link');
+                    }
+                }
+            });
+        }
+
+        // Truncate long visi/misi with show more
+        const truncate = (el, max = 220) => {
+            const full = el.getAttribute('data-full') || el.textContent || '';
+            if (!full) return;
+            if (full.length <= max) return;
+            const short = full.slice(0, max).trim() + '...';
+            el.textContent = short;
+            const more = document.createElement('button');
+            more.className = 'btn btn-link btn-sm p-0 mb-4';
+            more.type = 'button';
+            more.textContent = 'Tampilkan selengkapnya';
+            more.addEventListener('click', () => {
+                if (more.textContent.includes('selengkapnya')) {
+                    el.textContent = full;
+                    more.textContent = 'Sembunyikan';
+                } else {
+                    el.textContent = short;
+                    more.textContent = 'Tampilkan selengkapnya';
+                }
+            });
+            el.parentNode.insertBefore(more, el.nextSibling);
+        };
+
+        document.querySelectorAll('.candidate-visi, .candidate-misi').forEach(el => truncate(el));
+        // CV modal
+        const cvModal = document.createElement('div');
+        cvModal.id = 'cvModal';
+        cvModal.style.display = 'none';
+        cvModal.innerHTML = `
+      <div style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:2000;display:flex;align-items:center;justify-content:center;">
+        <div style="width:85%;max-width:900px;background:white;border-radius:12px;overflow:hidden;">
+          <div style="padding:12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #eee;">
+            <div><strong>Preview CV</strong></div>
+            <button id="cvCloseBtn" class="btn btn-sm btn-outline-danger">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <div style="height:80vh;"><iframe id="cvFrame" src="" style="width:100%;height:100%;border:0;"></iframe></div>
+        </div>
+      </div>
+    `;
+        document.body.appendChild(cvModal);
+
+        function openCv(url) {
+            const frame = document.getElementById('cvFrame');
+            frame.src = url;
+            cvModal.style.display = 'block';
+        }
+        function closeCv() {
+            const frame = document.getElementById('cvFrame');
+            frame.src = '';
+            cvModal.style.display = 'none';
+        }
+        document.body.addEventListener('click', function (e) {
+            if (e.target && e.target.classList && e.target.classList.contains('cv-btn')) {
+                const url = e.target.getAttribute('data-file');
+                if (url) openCv(url);
+            }
+        });
+        document.getElementById('cvCloseBtn').addEventListener('click', closeCv);
+
+        // Vote handling + visual fill update
+        function computeAndSetVoteFills() {
+            const counts = Array.from(document.querySelectorAll('[id^="vote-count-"]'))
+                .map(el => parseInt(el.textContent || '0', 10) || 0);
+            const total = counts.reduce((s, v) => s + v, 0);
+            document.querySelectorAll('[id^="vote-count-"]').forEach(el => {
+                const id = el.id.replace('vote-count-', '');
+                const val = parseInt(el.textContent || '0', 10) || 0;
+                const pct = total > 0 ? Math.round((val / total) * 100) : 0;
+                const fill = document.getElementById('vote-fill-' + id);
+                if (fill) fill.style.width = pct + '%';
+            });
+        }
+
+        // initial fill setup
+        computeAndSetVoteFills();
+
+        // Vote flow: show confirmation modal, then submit a standard (non-AJAX) POST so server can redirect to results page
+        // Inject vote modal HTML and a hidden form used for POST submission
+        const voteModalHtml = `
+        <div class="delete-modal" id="voteModal">
+            <div class="delete-modal-content px-5 text-center py-5">
+                <div class="delete-modal-header border-0">
+                    <i class="fa-solid fa-triangle-exclamation text-primary display-2 mb-4"></i>
+                    <h3 class="delete-modal-title">Konfirmasi Vote</h3>
+                </div>
+                <div class="delete-modal-body py-0">
+                    <p class="delete-modal-text">
+                        Kandidat yang telah Anda pilih di langkah ini tidak dapat diubah kembali setelah melanjutkan. Pastikan pilihan sudah benar.
+                    </p>
+                </div>
+                <div class="delete-modal-footer">
+                    <button class="delete-cancel-btn btn-sm btn-custom btn-outline-custom" id="voteCancelBtn">Batalkan</button>
+                    <button class="delete-confirm-btn btn-sm btn-custom btn-primary-custom" id="voteConfirmBtn">Konfirmasi</button>
+                </div>
+            </div>
+        </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', voteModalHtml);
+
+        // Hidden form used for non-AJAX POST to /vote
+        const hiddenForm = document.createElement('form');
+        hiddenForm.method = 'POST';
+        hiddenForm.action = '{{ url_for("vote") }}';
+        hiddenForm.id = 'voteForm';
+        hiddenForm.style.display = 'none';
+        hiddenForm.innerHTML = `
+            <input type="hidden" name="candidate_id" id="voteCandidateId" value="">
+        `;
+        document.body.appendChild(hiddenForm);
+
+        const voteModal = document.getElementById('voteModal');
+        const voteConfirmBtn = document.getElementById('voteConfirmBtn');
+        const voteCancelBtn = document.getElementById('voteCancelBtn');
+        let activeVoteButton = null;
+        let pendingCandidateId = null;
+
+        // Open modal when vote button clicked
+        document.body.addEventListener('click', function (e) {
+            const btn = e.target.closest && e.target.closest('.vote-btn');
+            if (btn) {
+                const candidateId = btn.getAttribute('data-candidate-id');
+                if (!candidateId) return;
+                activeVoteButton = btn;
+                pendingCandidateId = candidateId;
+                voteModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        });
+
+        function closeVoteModal() {
+            voteModal.classList.remove('show');
+            document.body.style.overflow = '';
+            activeVoteButton = null;
+            pendingCandidateId = null;
+        }
+
+        voteCancelBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            closeVoteModal();
+        });
+
+        voteConfirmBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (!pendingCandidateId) return closeVoteModal();
+            // set hidden input and submit the form as a normal POST
+            document.getElementById('voteCandidateId').value = pendingCandidateId;
+            // disable the originating button to give immediate feedback
+            if (activeVoteButton) activeVoteButton.disabled = true;
+            hiddenForm.submit();
+        });
+
+        // Allow clicking outside modal to close
+        voteModal.addEventListener('click', function (ev) {
+            if (ev.target === voteModal) closeVoteModal();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,470 @@
+{% extends 'base.html' %} {% block title %}Hasil Pemilihan - {{
+election['title'] }}{% endblock %} {% block style %}
+<style>
+  :root {
+    --bg: #f1fbff;
+    --ring-start: #cfe9ff;
+    --ring-end: #3b82f6;
+  }
+  .result-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 18px;
+  }
+  .result-hero .left {
+    flex: 1;
+  }
+  .result-hero .right {
+    width: 220px;
+    text-align: right;
+  }
+  .result-hero h1 {
+    font-weight: 800;
+    margin: 0;
+  }
+  .code-pill {
+    display: inline-block;
+    background: #ef4444;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+
+  body {
+    background: linear-gradient(180deg, #ffffff 0%, var(--third-color) 100%);
+  }
+
+  .donut-wrap {
+    width: 520px;
+    height: 520px;
+    margin: 28px auto;
+    position: relative;
+    display: block;
+  }
+  .donut-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(#e6eefc 0deg 360deg);
+    filter: drop-shadow(0 12px 30px rgba(33, 72, 151, 0.08));
+  }
+  /* create hollow center by overlaying inner circle */
+  .donut-inner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 20px 50px rgba(2, 6, 23, 0.06);
+  }
+  .donut-inner img {
+    width: 140px;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+
+  /* percentage badge near top-right of ring */
+  .pct-bubble {
+    position: absolute;
+    background: white;
+    border: 4px solid #dbeafe;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.08);
+  }
+
+  /* labels around ring */
+  .ring-label {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 8px 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(99, 102, 241, 0.08);
+    font-weight: 700;
+    color: #475569;
+    box-shadow: 0 6px 18px rgba(2, 6, 23, 0.04);
+  }
+  #labelsContainer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .ring-label {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
+  .winner-block {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 12px;
+  }
+  .winner-title {
+    font-size: 28px;
+    font-weight: 800;
+  }
+  .winner-pill {
+    background: #0ea5e9;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: 800;
+    display: inline-block;
+  }
+
+  /* candidate list on bottom */
+  .results-list {
+    max-width: 920px;
+    margin: 18px auto;
+  }
+  .candidate-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px;
+    border-radius: 12px;
+    background: transparent;
+  }
+  .candidate-thumb {
+    width: 76px;
+    height: 76px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f1f5f9;
+  }
+  .candidate-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .candidate-meta {
+    flex: 1;
+  }
+  .candidate-pct {
+    text-align: right;
+    font-weight: 800;
+    width: 96px;
+  }
+
+  @media (max-width: 900px) {
+    .donut-wrap {
+      width: 360px;
+      height: 360px;
+    }
+    .donut-inner {
+      width: 180px;
+      height: 180px;
+    }
+    .donut-inner img {
+      width: 96px;
+      height: 124px;
+    }
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container my-5 py-5">
+  <div class="result-hero">
+    <div class="left">
+      <h1 class="mb-1">{{ election['title'] }}</h1>
+      <div class="text-muted small mt-3 mb-2">Kandidat Terpilih</div>
+      <div class="winner-block">
+        {# Use server-provided winner/winners passed from app.py #} {% if winner
+        %}
+        <div class="winner-pill">{{ winner.nama }}</div>
+        {% elif winners and winners|length > 1 %}
+        <div class="winner-pill">
+          Seri: {{ winners | map(attribute='nama') | join(', ') }}
+        </div>
+        {% else %}
+        <div class="winner-pill">-</div>
+        {% endif %}
+      </div>
+    </div>
+    <div class="right">
+      <div class="text-muted small">Kode Vote</div>
+      <div style="margin-top: 6px">
+        <span class="code-pill">{{ election['code'] }}</span>
+      </div>
+      <div style="margin-top: 14px; text-align: right">
+        <div class="text-muted small">Berakhir Pada</div>
+        <div style="margin-top: 6px; font-weight: 700">
+          {{ end_dt_display or '-' }}
+        </div>
+        <div style="margin-top: 8px">
+          <div
+            id="accessCountdown"
+            class="text-danger"
+            style="font-weight: 800"
+          ></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="donut-wrap" id="donutWrap">
+    <div class="donut-ring" id="donutRing"></div>
+    <div class="donut-inner" id="donutInner">
+      {% if winner and winner.foto_path %}
+      <img
+        src="{{ url_for('uploaded_file', filename=winner.foto_path) }}"
+        alt="{{ winner.nama }}"
+      />
+      {% elif winners and winners|length > 1 %}
+      <div style="text-align: center">
+        <div style="font-weight: 800">
+          Seri: {{ winners | map(attribute='nama') | join(', ') }}
+        </div>
+        <div class="text-muted">
+          Suara masing-masing: {{ winners[0].votes if winners else 0 }}
+        </div>
+      </div>
+      {% elif winner %}
+      <div style="text-align: center">
+        <div style="font-weight: 800">{{ winner.nama }}</div>
+        <div class="text-muted">Suara: {{ winner.votes }}</div>
+      </div>
+      {% else %}
+      <div style="text-align: center">
+        <div style="font-weight: 800">Tidak ada pemenang</div>
+        <div class="text-muted">Suara: 0</div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- pct bubble removed because labels show name + percentage together -->
+    <div class="pct-bubble" id="pctBubble" style="display: none">0%</div>
+    <!-- labels container -->
+    <div id="labelsContainer"></div>
+  </div>
+
+  <div class="results-list">
+    {% for c in candidates %}
+    <div class="candidate-row">
+      <div class="candidate-thumb">
+        {% if c.foto_path %}
+        <img
+          src="{{ url_for('uploaded_file', filename=c.foto_path) }}"
+          alt="{{ c.nama }}"
+        />
+        {% endif %}
+      </div>
+      <div class="candidate-meta">
+        <div class="fw-bold">{{ c.nama }}</div>
+        <div class="text-muted small">
+          Suara: {{ c.votes }} dari {{ total_votes }}
+        </div>
+        <div
+          class="vote-bar mt-2"
+          style="
+            height: 10px;
+            background: #eef2ff;
+            border-radius: 999px;
+            overflow: hidden;
+          "
+        >
+          <div
+            style="width: {{ c.pct }}%; height:100%; background: linear-gradient(90deg, #38bdf8, #60a5fa);"
+          ></div>
+        </div>
+      </div>
+      <div class="candidate-pct">{{ '%.2f'|format(c.pct) }}%</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %} {% block script %}
+<script>
+  (function(){
+      const candidates = {{ voted_candidates|tojson }} || [];
+      const ring = document.getElementById('donutRing');
+      const wrap = document.getElementById('donutWrap');
+      const inner = document.getElementById('donutInner');
+      const pctBubble = document.getElementById('pctBubble');
+      const labelsContainer = document.getElementById('labelsContainer');
+
+      if (!ring) return;
+      if (!candidates || candidates.length === 0) {
+          ring.style.background = 'radial-gradient(circle at 50% 50%, #f8fafc, #e6f4ff)';
+          pctBubble.style.display = 'none';
+          labelsContainer.innerHTML = '';
+          return;
+      }
+
+      // palette
+      const colors = ['#60a5fa','#38bdf8','#7c3aed','#06b6d4','#3b82f6','#93c5fd'];
+
+      // build gradient
+      let cum = 0; const stops = []; const midAngles = [];
+      for (let i=0;i<candidates.length;i++){
+          const pct = Math.max(0, Number(candidates[i].pct) || 0);
+          const start = cum; const end = cum + pct; const color = colors[i % colors.length];
+          stops.push(`${color} ${start}% ${end}%`);
+          midAngles.push((start + end) / 2 * 3.6);
+          cum = end;
+      }
+      ring.style.background = `conic-gradient(${stops.join(', ')})`;
+
+      // geometry
+      const R = Math.min(wrap.clientWidth, wrap.clientHeight)/2;
+      const labelRadius = R * 0.82; // base radius for labels
+      const bubbleRadius = R * 0.62;
+      const cx = wrap.clientWidth/2, cy = wrap.clientHeight/2;
+
+      // determine winner index for pct bubble
+      let winnerIndex = 0, maxV=-1;
+      for (let i=0;i<candidates.length;i++){ if ((candidates[i].votes||0) > maxV){ maxV = candidates[i].votes||0; winnerIndex = i; } }
+
+      // create label elements
+      labelsContainer.innerHTML = '';
+      const labels = [];
+      for (let i=0;i<candidates.length;i++){
+          const ang = midAngles[i] || 0;
+          const r = (ang - 90) * (Math.PI/180);
+          const x = cx + labelRadius * Math.cos(r);
+          const y = cy + labelRadius * Math.sin(r);
+          const el = document.createElement('div');
+          el.className = 'ring-label';
+          el.style.left = x + 'px'; el.style.top = y + 'px';
+          // show name and pct on one line but allow wrap
+          const pctText = (Number(candidates[i].pct)||0).toFixed(2) + '%';
+          el.innerHTML = `<div style="display:inline-block;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${candidates[i].nama || ('Kandidat ' + (i+1))} — ${pctText}</div>`;
+          labelsContainer.appendChild(el);
+          const rect = el.getBoundingClientRect();
+          labels.push({el, x, y, ax:x, ay:y, w:rect.width, h:rect.height});
+      }
+
+      // utility: check overlap
+      function overlap(A,B){ return !(A.right < B.left || A.left > B.right || A.bottom < B.top || A.top > B.top === undefined?B.top:B.top || false); }
+
+      // better overlap functions using numeric positions
+      function rectFromLabel(lbl){
+          const left = lbl.x - lbl.w/2; const top = lbl.y - lbl.h/2;
+          return {left, right: left + lbl.w, top, bottom: top + lbl.h, cx: lbl.x, cy: lbl.y};
+      }
+
+      function rectOverlap(a,b){ return !(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom); }
+
+      // get bubble rect
+      function getBubbleRect(){ const br = pctBubble.getBoundingClientRect(); return {left: br.left, right: br.right, top: br.top, bottom: br.bottom}; }
+
+      // iterative relaxation to remove overlaps
+      const maxIter = 30;
+      for (let iter=0; iter<maxIter; iter++){
+          let moved = false;
+          // recompute dims
+          for (let i=0;i<labels.length;i++){
+              const r = labels[i].el.getBoundingClientRect(); labels[i].w = r.width; labels[i].h = r.height; labels[i].ax = labels[i].x; labels[i].ay = labels[i].y;
+          }
+          // pairwise repel
+          for (let i=0;i<labels.length;i++){
+              for (let j=i+1;j<labels.length;j++){
+                  const A = labels[i]; const B = labels[j];
+                  const ra = rectFromLabel(A); const rb = rectFromLabel(B);
+                  if (rectOverlap(ra, rb)){
+                      // compute push vector from A to B
+                      let dx = (B.x - A.x); let dy = (B.y - A.y);
+                      if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1){ dx = (Math.random()-0.5); dy = (Math.random()-0.5); }
+                      const dist = Math.sqrt(dx*dx + dy*dy) || 1;
+                      const overlapX = (A.w/2 + B.w/2) - Math.abs(dx);
+                      const overlapY = (A.h/2 + B.h/2) - Math.abs(dy);
+                      const shift = Math.max(overlapX, overlapY, 6);
+                      const nx = dx / dist; const ny = dy / dist;
+                      // move A and B opposite directions
+                      A.x -= nx * (shift/2);
+                      A.y -= ny * (shift/2);
+                      B.x += nx * (shift/2);
+                      B.y += ny * (shift/2);
+                      moved = true;
+                  }
+              }
+          }
+          // avoid bubble by pushing labels outward
+          const bubbleRect = getBubbleRect();
+          for (let i=0;i<labels.length;i++){
+              const L = labels[i]; const rl = rectFromLabel(L);
+              if (rectOverlap(rl, bubbleRect)){
+                  // push label radially outward from center
+                  const dx = L.x - cx; const dy = L.y - cy; const mag = Math.sqrt(dx*dx + dy*dy) || 1;
+                  const nx = dx/mag; const ny = dy/mag; const push = 20;
+                  L.x += nx * push; L.y += ny * push; moved = true;
+              }
+          }
+          // clamp labels to container bounds
+          for (let i=0;i<labels.length;i++){
+              const L = labels[i];
+              const margin = 8;
+              L.x = Math.max(margin, Math.min(wrap.clientWidth - margin, L.x));
+              L.y = Math.max(margin, Math.min(wrap.clientHeight - margin, L.y));
+          }
+
+          // apply positions
+          for (let i=0;i<labels.length;i++){
+              labels[i].el.style.left = labels[i].x + 'px';
+              labels[i].el.style.top = labels[i].y + 'px';
+          }
+          if (!moved) break;
+      }
+
+      for (let i=0;i<labels.length;i++){
+          const A = labels[i]; const ra = rectFromLabel(A);
+          for (let j=i+1;j<labels.length;j++){
+              const B = labels[j]; const rb = rectFromLabel(B);
+              if (rectOverlap(ra, rb)){
+                  const dx = B.x - A.x; const dy = B.y - A.y; const mag = Math.sqrt(dx*dx + dy*dy) || 1;
+                  const nx = dx/mag; const ny = dy/mag; const shift = 8;
+                  A.x -= nx*shift; A.y -= ny*shift; B.x += nx*shift; B.y += ny*shift;
+                  A.el.style.left = A.x + 'px'; A.el.style.top = A.y + 'px';
+                  B.el.style.left = B.x + 'px'; B.el.style.top = B.y + 'px';
+              }
+          }
+      }
+
+      window.addEventListener('resize', function(){ setTimeout(()=>location.reload(),120) });
+  })();
+
+  // Countdown for how long this results page will remain accessible (end_date + 24h)
+  (function(){
+      const expiryMs = {{ expiry_ts_ms|tojson }};
+      const countdownEl = document.getElementById('accessCountdown');
+      if (!expiryMs || !countdownEl) return;
+
+      function formatDiff(ms){
+          if (ms <= 0) return 'Akses Berakhir';
+          const s = Math.floor(ms/1000);
+          const days = Math.floor(s / 86400); const hours = Math.floor((s % 86400)/3600);
+          const mins = Math.floor((s % 3600)/60); const secs = s % 60;
+          let parts = [];
+          if (days>0) parts.push(days + 'd');
+          if (hours>0) parts.push(hours + 'h');
+          if (mins>0) parts.push(mins + 'm');
+          parts.push(secs + 's');
+          return parts.join(' ');
+      }
+
+      function tick(){
+          const now = Date.now();
+          const diff = expiryMs - now;
+          countdownEl.textContent = diff > 0 ? ('Tersisa: ' + formatDiff(diff)) : 'Akses Berakhir';
+          if (diff <= 0 && typeof timer !== 'undefined') clearInterval(timer);
+      }
+
+      tick();
+      const timer = setInterval(tick, 1000);
+  })();
+</script>
+{% endblock %}

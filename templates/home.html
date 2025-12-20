@@ -1,0 +1,338 @@
+{% extends 'base.html' %} {% block style %}
+<style>
+  /* Hero Section */
+  .hero-section {
+    background: linear-gradient(to bottom, #ffffff 0%, #e8f4ff 100%);
+    height: 80vh;
+    max-height: 768px;
+    display: flex;
+    align-items: center;
+  }
+
+  .hero-section_img {
+    width: 50vmin;
+    max-width: 350px;
+  }
+
+  .ballot-box {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+  }
+
+  .hero-title {
+    font-size: 48px;
+    font-weight: bold;
+    line-height: 1.2;
+    margin-bottom: 30px;
+  }
+
+  .code-form-container {
+    animation: fadeIn 0.3s ease-in;
+  }
+
+  .form-control {
+    padding: 12px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 16px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+  }
+
+  .form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  }
+
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: block;
+    color: #333;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  footer.contact-section {
+    background: linear-gradient(to top, #c8e5ff 0%, #a0d5ff 100%);
+  }
+</style>
+{% endblock %} {% block content %}
+
+<!-- Hero Section -->
+<section id="home" class="hero-section">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-sm-12 col-lg-6 text-center mb-5 mb-lg-0">
+        <img
+          src="{{ url_for('static', filename='img/kotak.png') }}"
+          class="hero-section_img"
+          alt=""
+        />
+      </div>
+      <div class="col-sm-12 col-lg-6">
+        <h1 class="hero-title">Secure Your Voice,<br />Shape The Choice.</h1>
+
+        <!-- Container untuk kedua state -->
+        <div id="buttonContainer">
+          <!-- State 1: Tombol utama (default) -->
+          <div class="d-flex flex-wrap gap-3" id="mainButtons">
+            <button
+              class="btn-custom btn-outline-custom"
+              onclick="showCodeForm()"
+            >
+              Masukkan Kode
+            </button>
+            <a
+              href="{{ url_for('election') }}"
+              class="btn-custom btn-primary-custom"
+              >Buat Pemilihan</a
+            >
+          </div>
+
+          <!-- State 2: Form input kode (awalnya tersembunyi) -->
+          <div class="code-form-container" id="codeForm" style="display: none">
+            <!-- submission handled client-side: redirect to /election/<CODE> -->
+            <form id="codeInputForm" action="#" method="get">
+              <div class="mb-3">
+                <label for="codeInput" class="form-label"
+                  >Masukkan Kode Pemilihan</label
+                >
+                <input
+                  type="text"
+                  class="form-control"
+                  id="codeInput"
+                  placeholder="Contoh: ABC123"
+                  required
+                />
+                <div
+                  id="codeError"
+                  class="text-danger small"
+                  style="display: none; margin-top: 6px"
+                >
+                  Kode tidak ditemukan. Periksa kembali kode yang Anda masukkan.
+                </div>
+              </div>
+              <div class="d-flex gap-2">
+                <button
+                  type="button"
+                  class="btn btn-dark back_button"
+                  onclick="showMainButtons()"
+                >
+                  <i class="fas fa-angle-left"></i>
+                </button>
+                <button
+                  type="submit"
+                  class="btn-custom btn-primary-custom w-100"
+                >
+                  Konfirmasi
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- What We Offer Section -->
+<section id="service" class="offer-section">
+  <div class="container">
+    <h2 class="offer-title">What We Offer</h2>
+    <div class="row g-5">
+      <div class="col col-sm-12 col-lg-4 col-md-6">
+        <div class="offer-card">
+          <div class="offer-icon">
+            <i class="fas fa-check"></i>
+          </div>
+          <h5>
+            Setiap suara dihitung dengan tepat sehingga hasil pemilihan dapat
+            dipertanggungjawabkan.
+          </h5>
+        </div>
+      </div>
+      <div class="col col-sm-12 col-lg-4 col-md-6">
+        <div class="offer-card">
+          <div class="offer-icon">
+            <i class="fas fa-clock"></i>
+          </div>
+          <h5>
+            Proses pemungutan suara berlangsung singkat tanpa antre, dan
+            hasilnya muncul dalam hitungan detik.
+          </h5>
+        </div>
+      </div>
+      <div class="col col-sm-12 col-lg-4 col-md-6">
+        <div class="offer-card">
+          <div class="offer-icon">
+            <i class="fas fa-lock"></i>
+          </div>
+          <h5>
+            Data pemilih dijaga dengan sistem keamanan yang menjaga kerahasiaan
+            pilihan.
+          </h5>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ Section -->
+<section id="contact" class="faq-section">
+  <div class="container d-flex flex-column align-items-center">
+    <h2 class="faq-title">FAQ</h2>
+    <div class="row justify-content-center faq-section_content">
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Apa itu Votio?</span>
+          <span class="faq-toggle"><i class="fa-solid fa-caret-up"></i></span>
+        </div>
+        <div class="faq-answer active">
+          Votio adalah platform e-voting berbasis web yang menyederhanakan dan
+          mempercepat proses pemungutan suara digital, cocok digunakan untuk
+          berbagai pemilihan dalam kelompok/organisasi skala kecil dan menengah.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Bagaimana cara melakukan vote?</span>
+          <span class="faq-toggle"><i class="fa-solid fa-caret-down"></i></span>
+        </div>
+        <div class="faq-answer">
+          Untuk melakukan vote, Anda perlu memasukkan kode pemilihan yang telah
+          diberikan, kemudian pilih kandidat yang Anda inginkan.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Apakah data saya aman?</span>
+          <span class="faq-toggle"><i class="fa-solid fa-caret-down"></i></span>
+        </div>
+        <div class="faq-answer">
+          Ya, data Anda sangat aman. Kami menggunakan enkripsi tingkat tinggi
+          untuk melindungi privasi dan keamanan data Anda.
+        </div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-question" onclick="toggleFaq(this)">
+          <span>Mengapa menggunakan Votio?</span>
+          <span class="faq-toggle"><i class="fa-solid fa-caret-down"></i></span>
+        </div>
+        <div class="faq-answer">
+          Votio membuat pemilihan jadi lebih praktis tanpa mengurangi esensi
+          dari pemungutan suara, dimana pemilih dapat memilih secara langsung,
+          hasilnya adil, transparan, dan dapat diakses secara umum.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %} {% block script %}
+<script>
+  document.querySelectorAll(".nav-link").forEach((e) => {
+    e.addEventListener("click", function (event) {
+      document.querySelectorAll(".nav-link").forEach((link) => {
+        link.classList.remove("active");
+      });
+
+      this.classList.add("active");
+    });
+  });
+
+  function toggleFaq(element) {
+    const answer = element.nextElementSibling;
+    const toggle = element.querySelector(".faq-toggle");
+
+    document.querySelectorAll(".faq-answer").forEach((item) => {
+      if (item !== answer) {
+        item.classList.remove("active");
+      }
+    });
+
+    document.querySelectorAll(".faq-toggle").forEach((item) => {
+      if (item !== toggle) {
+        item.innerHTML = '<i class="fa-solid fa-caret-down"></i>';
+      }
+    });
+
+    answer.classList.toggle("active");
+    toggle.innerHTML = answer.classList.contains("active")
+      ? '<i class="fa-solid fa-caret-up"></i>'
+      : '<i class="fa-solid fa-caret-down"></i>';
+  }
+
+  function showCodeForm() {
+    document.getElementById("mainButtons").style.height = "0";
+    document.getElementById("mainButtons").style.overflow = "hidden";
+    document.getElementById("codeForm").style.display = "block";
+  }
+
+  function showMainButtons() {
+    document.getElementById("mainButtons").style.height = "auto";
+    document.getElementById("mainButtons").style.overflow = "auto";
+    document.getElementById("codeForm").style.display = "none";
+  }
+
+  document
+    .getElementById("codeInputForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const inputEl = document.getElementById("codeInput");
+      const errorEl = document.getElementById("codeError");
+      let code = (inputEl.value || "").trim();
+
+      errorEl.style.display = "none";
+
+      if (code === "") {
+        alert("Silakan masukkan kode pemilihan");
+        inputEl.focus();
+        return;
+      }
+
+      // Uppercase the code for consistency.
+      const codeUpper = code.toUpperCase();
+
+      // Disable submit while checking
+      const submitBtn = this.querySelector('button[type="submit"]');
+      if (submitBtn) submitBtn.disabled = true;
+
+      try {
+        const resp = await fetch(
+          `/api/check_code?code=${encodeURIComponent(codeUpper)}`
+        );
+        if (!resp.ok) throw new Error("Network error");
+        const json = await resp.json();
+        if (json && json.exists) {
+          // Clear input and UI state
+          inputEl.value = "";
+          showMainButtons();
+          window.location.href = `/election/${encodeURIComponent(codeUpper)}`;
+        } else {
+          // Show inline message and keep form open
+          errorEl.style.display = "block";
+          inputEl.focus();
+        }
+      } catch (err) {
+        console.error("check_code error", err);
+        alert("Gagal memeriksa kode. Silakan coba lagi.");
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    });
+</script>
+{% endblock %}

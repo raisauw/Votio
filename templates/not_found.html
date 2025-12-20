@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Kode Tidak Ditemukan{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+  <div class="d-flex align-items-center justify-content-center" style="min-height:50vh;">
+    <div class="text-center">
+      <h1 style="font-size:48px; font-weight:800; margin-bottom:12px;">Kode "{{ code }}" tidak ditemukan</h1>
+      <p class="text-muted" style="margin-bottom:18px;">Pemilihan dengan kode tersebut tidak tersedia. Periksa kembali kode atau buat pemilihan baru.</p>
+      <div class="d-flex justify-content-center gap-2">
+        <a href="{{ url_for('home') }}" class="btn btn-custom btn-outline-secondary">Kembali ke Beranda</a>
+        <a href="{{ url_for('election') }}" class="btn-custom btn-primary-custom">Buat Pemilihan Baru</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
