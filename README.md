@@ -5,6 +5,11 @@
 4. Fatwa A'isy Irsyaad Zain Sundawa - NIM 2211102183
 
 
+
+
+
+
+
 # Update Trello
 All Done, tidak ada on going
 ![Trello All Done](https://github.com/user-attachments/assets/14085beb-17ba-4b44-bd78-2129363379fc)
